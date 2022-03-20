@@ -1,0 +1,11 @@
+[package]
+name = "hecto"
+version = "0.1.0"
+edition = "2021"
+authors = ["Liem Dam-Quang <liem.daq@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+termion = "1.5.6"
+unicode-segmentation = "1"
