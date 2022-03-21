@@ -32,11 +32,13 @@ enum editorHighlight {
     HL_KEYWORD1,
     HL_KEYWORD2,
     HL_NUMBER, 
-    HL_MATCH
+    HL_MATCH,
+    HL_CAPS
 };
 
 #define HL_HIGHLIGHT_NUMBERS (1<<0)
 #define HL_HIGHLIGHT_STRINGS (1<<1)
+#define HL_HIGHLIGHT_CAPS (1<<2)
 
 enum editorKey {
     BACKSPACE = 127,
@@ -95,7 +97,7 @@ struct editorConfig E;
 char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
     "switch", "if", "while", "for", "break", "continue", "return", "else", "struct",
-     "union", "typedef", "static", "enum", "class", "case",
+     "union", "typedef", "static", "enum", "class", "case", "#include", "#define",
 
      "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|", "void|", NULL
 };
@@ -340,6 +342,23 @@ void editorUpdateSyntax(erow* row){
                 prev_sep = 0;
                 continue;
             }
+            //otherwise check if word is uppercase
+            if (row->render[i] == '_' || isupper(row->render[i])){
+                int k = i;
+                int is_uppercase = 1;
+                while(!is_separator(row->render[k])){
+                    if (!isupper(row->render[k]) && row->render[k] != '_' && !isdigit(row->render[k])){
+                        is_uppercase = 0;
+                        break;
+                    }
+                    k++;
+                }
+                if (is_separator(row->render[k]) && is_uppercase){
+                    memset(&row->hl[i], HL_CAPS, k-i);
+                    i += k - i;
+                    continue;      
+                }
+            }
         }        
         prev_sep = is_separator(c);
         i++;
@@ -361,6 +380,7 @@ int editorSyntaxToColor(enum editorHighlight hl){
         case HL_STRING: return 35;
         case HL_KEYWORD1: return 33;
         case HL_KEYWORD2: return 32;
+        case HL_CAPS: return 31;
         case HL_NUMBER: return 31; 
         case HL_MATCH: return 34; 
         default: return 37;
@@ -535,6 +555,12 @@ void editorInsertNewLine() {
     }
     E.cy++;
     E.cx = 0;
+    int i = 0;
+    while(isspace(E.row[E.cy-1].chars[i])){
+        editorInsertChar(E.row[E.cy-1].chars[i]);
+        i++;
+    }
+    
 }
 
 void editorDelChar(){
@@ -683,7 +709,7 @@ void editorFind() {
     int saved_cy = E.cy;
     int saved_coloff = E.coloff;
     int saved_rowoff = E.rowoff;
-    char *query = editorPrompt("Search: %s (Use ESC/Arrows/Enter)", editorFindCallback);
+    char *query = editorPrompt("Search: %s* (Use ESC/Arrows/Enter)", editorFindCallback);
     if (query){
         free(query);
     } else {
@@ -861,10 +887,6 @@ void editorRefreshScreen() {
 
     write(STDOUT_FILENO, ab.b, ab.len);
     abFree(&ab);
-    // write(STDOUT_FILENO, "\x1b[2J", 4);
-    // write(STDOUT_FILENO, "\x1b[H", 3);
-
-    // write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
 void editorSetStatusMessage(const char *fmt, ...){
