@@ -41,11 +41,11 @@ impl FileType {
 #[derive(Default)]
 pub struct HighlightOptions {
     file_type: Option<FileType>,
-    numbers: bool,
-    strings: bool,
-    characters: bool,
-    comments: bool,
-    multiline_comments: bool,
+    pub numbers: bool,
+    pub strings: bool,
+    pub characters: bool,
+    pub comments: bool,
+    pub multiline_comments: bool,
     keywords1: Vec<String>,
     keywords2: Vec<String>,
 }
@@ -70,6 +70,14 @@ impl HighlightOptions {
             None => None, 
         }
 
+    }
+
+    pub fn primary_keywords(&self) -> &Vec<String> {
+        &self.keywords1
+    }
+
+    pub fn secondary_keywords(&self) -> &Vec<String> {
+        &self.keywords2
     }
 }
 

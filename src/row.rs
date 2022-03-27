@@ -188,17 +188,54 @@ impl Row {
         self.len = self.string[..].graphemes(true).count();
     }
 
-    pub fn highlight(&mut self, hl_opts: &HighlightOptions, word: &Option<String>, start_with_comment: bool) -> bool {
+    pub fn highlight(&mut self, hl: &HighlightOptions, word: &Option<String>, start_with_comment: bool) -> bool {
         let chars: Vec<char> = self.string.chars().collect();
-        for c in chars {
-            if c.is_numeric() {
-                self.highlight.push(Highlight::Number);
-            } else {
-                self.highlight.push(Highlight::Normal);
+        self.highlight = Vec::new();
+        let mut index = 0;
+        let mut in_ml_comment = start_with_comment;
+        while let Some(c) = chars.get(index) {
+            if hl.multiline_comments {
+                
+            }
+            if hl.numbers {
+
+            }
+            if hl.characters {
+
+            }
+            if hl.comments {
+
+            }
+            if hl.strings {
+
+            }
+            self.highlight.push(Highlight::None);
+            index += 1;
+        }
+        self.highlight_match(word);
+
+
+        false
+    }
+
+    pub fn highlight_match(&mut self, word: &Option<String>){
+        if let Some(word) = word {
+            if word.is_empty() {
+                return;
+            }
+            let mut index = 0;
+            while let Some(smatch) = self.find(word, index, SearchDirection::Forward) {
+                if let Some(next_index) = smatch.checked_add(word[..].graphemes(true).count()){
+                    for i in smatch..next_index {
+                        self.highlight[i] = Highlight::Match;
+                    }
+                    index = next_index;
+                } else {
+                    break;
+                }
             }
         }
 
-        true
     }
 
 }
