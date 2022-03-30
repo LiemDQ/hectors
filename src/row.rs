@@ -24,6 +24,10 @@ impl From<&str> for Row {
     }
 }
 
+fn is_separator(c: char) -> bool{
+   c.is_control() || c == '\r' || c == '\n' || c.is_whitespace() || ";{} <>()[],.+-/*=-%".contains(c)
+}
+
 impl Row {
     pub fn len(&self) -> usize {
         self.len
@@ -194,11 +198,11 @@ impl Row {
         let mut index = 0;
         let mut in_ml_comment = start_with_comment;
         while let Some(c) = chars.get(index) {
+            if self.highlight_numbers(hl, &mut index, &chars) {
+                continue;
+            }
             if hl.multiline_comments {
                 
-            }
-            if hl.numbers {
-
             }
             if hl.characters {
 
@@ -218,7 +222,49 @@ impl Row {
         false
     }
 
-    pub fn highlight_match(&mut self, word: &Option<String>){
+    fn highlight_numbers(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>) -> bool {
+        if hl.numbers {
+            while let Some(c) = chars.get(*index) {
+                if is_separator(*c) {
+                    let mut count = 1;
+                    while let Some(ch) = chars.get(*index + count){
+                        if !ch.is_ascii_digit() {
+                            break;
+                        }
+                        count += 1; 
+                    }
+
+                    if let Some(w) = chars.get(*index + count) {
+                        if is_separator(*w) {
+                            self.highlight.push(Highlight::None);
+                            for _ in 1..count {
+                                self.highlight.push(Highlight::Number);
+                            }
+                            *index += count; 
+                            return true;
+                        }                        
+                    } else if let Some(w) = chars.get(*index + count - 1) {
+                        if w.is_ascii_digit() {
+                            self.highlight.push(Highlight::None);
+                            for _ in 1..count {
+                                self.highlight.push(Highlight::Number);
+                            }
+                            *index += count; 
+                            return true;
+                        }
+                    }
+                    return false; 
+                } else {
+                    return false;
+                }
+            }
+        }
+        false
+    }
+
+    
+
+    fn highlight_match(&mut self, word: &Option<String>){
         if let Some(word) = word {
             if word.is_empty() {
                 return;

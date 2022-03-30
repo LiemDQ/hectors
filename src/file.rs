@@ -54,6 +54,7 @@ impl HighlightOptions {
     pub fn from(filename: &str) -> Self {
         
         Self {
+            numbers: true,
             file_type: Self::set_filetype(filename),
             ..Default::default()
         }
