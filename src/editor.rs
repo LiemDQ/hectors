@@ -371,7 +371,6 @@ impl Editor {
 	fn refresh_screen(&mut self) -> Result<(), std::io::Error> {
 		Screen::cursor_hide();
 		Screen::cursor_position(&Position::default());
-		Screen::clear();
 		if self.should_quit {
 			Screen::clear();
 		} else {
