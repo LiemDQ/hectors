@@ -55,6 +55,7 @@ impl HighlightOptions {
         
         Self {
             numbers: true,
+            strings: true,
             file_type: Self::set_filetype(filename),
             ..Default::default()
         }

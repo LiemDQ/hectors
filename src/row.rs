@@ -198,11 +198,11 @@ impl Row {
         let mut index = 0;
         let mut in_ml_comment = start_with_comment;
         while let Some(c) = chars.get(index) {
-            if self.highlight_numbers(hl, &mut index, &chars) {
-                continue;
-            }
             if hl.multiline_comments {
                 
+            }
+            if self.highlight_numbers(hl, &mut index, &chars) || self.highlight_strings(hl, &mut index, &chars) {
+                continue;
             }
             if hl.characters {
 
@@ -224,7 +224,7 @@ impl Row {
 
     fn highlight_numbers(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>) -> bool {
         if hl.numbers {
-            while let Some(c) = chars.get(*index) {
+            if let Some(c) = chars.get(*index) {
                 if is_separator(*c) {
                     let mut count = 1;
                     while let Some(ch) = chars.get(*index + count){
@@ -254,8 +254,32 @@ impl Row {
                         }
                     }
                     return false; 
-                } else {
-                    return false;
+                } 
+            }
+        }
+        false
+    }
+
+    fn highlight_strings(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>) -> bool {
+        if hl.strings {
+            if let Some(c) = chars.get(*index){
+                if *c == '"' {
+                    let mut close = false; 
+                    let mut count = 1;
+                    while let Some(ch) = chars.get(*index + count){
+                        if *ch == '"' {
+                            close = true;
+                            break;
+                        }
+                        count += 1;
+                    }
+                    if close {
+                        for _ in 0..count + 1 {
+                            self.highlight.push(Highlight::String);
+                        }
+                        *index += count + 1;
+                        return true;
+                    }
                 }
             }
         }
