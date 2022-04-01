@@ -6,6 +6,10 @@ use crate::row::Row;
 use crate::file::File;
 use crate::screen::{Screen, Position};
 
+/* This is the main editor source file for hecto! 
+This is a multiline comment to test the functionlity of syntax highlighting.
+ */
+
 const HECTO_VERSION: &str = env!("CARGO_PKG_VERSION");
 const HECTOR_QUIT_TIMES: u8 = 3;
 const MESSAGE_TIMEOUT: Duration = std::time::Duration::from_secs(5);
@@ -89,7 +93,7 @@ impl Editor {
 	fn draw_message_bar(&self) {
 		if time::Instant::now() - self.statusmsg.time <= MESSAGE_TIMEOUT {
 			let width = self.scr.size().width as usize;
-			let msg = if self.statusmsg.text.len() >= width {
+			let msg = if self.statusmsg.text.len() >= width /* single line multiline comment */ {
 				&self.statusmsg.text[..width]
 			} else {
 				&self.statusmsg.text[..]
@@ -103,6 +107,9 @@ impl Editor {
 		}
 	}
 
+	/* Another multiline comment
+	   found here. 
+	 */
 	fn draw_status_bar(&self) {
 		let filename = if let Some(name) = &self.file.filename {
 			name
@@ -393,7 +400,7 @@ impl Editor {
 	{
 		let mut msg = String::new();
 		loop {
-			self.statusmsg = StatusMessage::from(format!("{}{}*", prompt, msg));
+			self.statusmsg = StatusMessage::from(format!("{}{}", prompt, msg));
 			self.refresh_screen()?;
 			let key = Screen::read_key()?;
 			match key {

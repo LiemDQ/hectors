@@ -199,63 +199,76 @@ impl Row {
         let mut in_ml_comment = start_with_comment;
         while let Some(c) = chars.get(index) {
             if hl.multiline_comments {
+                if in_ml_comment {
+                    if self.highlight_ml_comment_end(hl, &mut index, &chars) {
+                        in_ml_comment = false;
+                        continue;
+                    } else {
+                        return true;
+                    }
+                } 
                 
+                match self.highlight_ml_comment_beginning(hl, &mut index, &chars){
+                    (false, false) => {},
+                    (true, false) => { continue; },
+                    (true, true) => { return true;},
+                    _ => {},
+                } 
             }
-            if self.highlight_numbers(hl, &mut index, &chars) || self.highlight_strings(hl, &mut index, &chars) {
+            if self.highlight_comment(hl, &mut index, &chars){
                 continue;
             }
-            if hl.characters {
-
+            if self.highlight_strings(hl, &mut index, &chars) || self.highlight_character(hl, &mut index, &chars) {
+                continue;
             }
-            if hl.comments {
 
-            }
-            if hl.strings {
+            if is_separator(*c) {
 
+                if self.highlight_numbers(hl, &mut index, &chars) 
+                || self.highlight_primary_keywords(hl, &mut index, &chars)
+                || self.highlight_secondary_keywords(hl, &mut index, &chars) {
+                    continue;
+                }
             }
             self.highlight.push(Highlight::None);
             index += 1;
         }
         self.highlight_match(word);
-
-
         false
     }
 
     fn highlight_numbers(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>) -> bool {
         if hl.numbers {
-            if let Some(c) = chars.get(*index) {
-                if is_separator(*c) {
-                    let mut count = 1;
-                    while let Some(ch) = chars.get(*index + count){
-                        if !ch.is_ascii_digit() {
-                            break;
-                        }
-                        count += 1; 
-                    }
-
-                    if let Some(w) = chars.get(*index + count) {
-                        if is_separator(*w) {
-                            self.highlight.push(Highlight::None);
-                            for _ in 1..count {
-                                self.highlight.push(Highlight::Number);
-                            }
-                            *index += count; 
-                            return true;
-                        }                        
-                    } else if let Some(w) = chars.get(*index + count - 1) {
-                        if w.is_ascii_digit() {
-                            self.highlight.push(Highlight::None);
-                            for _ in 1..count {
-                                self.highlight.push(Highlight::Number);
-                            }
-                            *index += count; 
-                            return true;
-                        }
-                    }
-                    return false; 
-                } 
+            let mut count = 1;
+            while let Some(ch) = chars.get(*index + count){
+                if !ch.is_ascii_digit() {
+                    break;
+                }
+                count += 1; 
             }
+
+            if let Some(w) = chars.get(*index + count) {
+                if is_separator(*w) {
+                    self.highlight.push(Highlight::None);
+                    for _ in 1..count {
+                        self.highlight.push(Highlight::Number);
+                    }
+                    *index += count; 
+                    return true;
+                }                        
+            } else if let Some(w) = chars.get(*index + count - 1) {
+                if w.is_ascii_digit() {
+                    self.highlight.push(Highlight::None);
+                    for _ in 1..count {
+                        self.highlight.push(Highlight::Number);
+                    }
+                    *index += count; 
+                    return true;
+                }
+            }
+            return false; 
+        
+            
         }
         false
     }
@@ -286,7 +299,135 @@ impl Row {
         false
     }
 
+    fn highlight_primary_keywords(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>)-> bool {
+        if !hl.primary_keywords().is_empty() {
+
+            let mut count = 1;
+            while let Some(ch) = chars.get(*index + count)  {
+                if is_separator(*ch){
+                    break;
+                }
+                count += 1;
+            }
+            //not the most efficient, but we will make do for now
+            let word : String = chars[*index+1..*index+count].into_iter().collect();
+            if hl.primary_keywords().contains(&word) {
+                self.highlight.push(Highlight::None);
+                for _ in 1..count {
+                    self.highlight.push(Highlight::Keyword1);
+                }
+                *index += count;
+                return true;
+            }
+        }
+        false
+    }
+
+    fn highlight_secondary_keywords(&mut self, hl: &HighlightOptions, index: & mut usize, chars: &Vec<char>) -> bool {
+        if !hl.secondary_keywords().is_empty() {
+            let mut count = 1;
+            while let Some(ch) = chars.get(*index + count)  {
+                if is_separator(*ch){
+                    break;
+                }
+                count += 1;
+            }
+            //not the most efficient, but we will make do for now
+            let word : String = chars[*index+1..*index+count].into_iter().collect();
+            if hl.secondary_keywords().contains(&word) {
+                self.highlight.push(Highlight::None);
+                for _ in 1..count {
+                    self.highlight.push(Highlight::Keyword2);
+                }
+                *index += count;
+                return true;
+            }
+        }    
+        false
+    }
+
+    fn highlight_comment(&mut self, hl: &HighlightOptions, index: &mut usize, chars: &Vec<char>) -> bool {
+        if hl.comments {
+            if let Some(c) = chars.get(*index) {
+                if let Some(b) = chars.get(*index + 1){
+                    if *c == '/' && *b == '/' {
+                        for _ in *index..chars.len() {
+                            self.highlight.push(Highlight::Comment);
+                        }
+                        *index += chars.len() - *index;
+                        return true;
+                    }
+                }
+            } 
+        }
+        false
+    }
     
+    fn highlight_ml_comment_beginning(&mut self, hl: &HighlightOptions, index: &mut usize, chars: &Vec<char>) -> (bool,bool) {
+        if hl.multiline_comments {
+            if let Some(c) = chars.get(*index) {
+                if let Some(b) = chars.get(*index + 1){
+                    if *c == '/' && *b == '*' {
+                        let mut count = 2;
+                        let has_advanced = true;
+                        //this is probably not an idiomatic way of doing it, but i 
+                        //could not find a more elegant method.
+                        self.highlight.push(Highlight::Comment);
+                        self.highlight.push(Highlight::Comment);
+                        for n in *index+count..chars.len() {
+                            self.highlight.push(Highlight::Comment);
+                            count += 1;
+                            if chars[n-1] == '*' && chars[n] == '/' {
+                                break;
+                            }
+                        }
+                        *index += count;
+                        return (has_advanced,count >= chars.len()-1);
+                    }
+                }
+            } 
+        }
+        (false, false)
+    }
+
+    fn highlight_ml_comment_end(&mut self, hl: &HighlightOptions, index: &mut usize, chars: &Vec<char>) -> bool {
+        if hl.multiline_comments && chars.len() > 0 {
+            for n in 1..chars.len() {
+                self.highlight.push(Highlight::Comment);
+                if chars[n-1] == '*' && chars[n] == '/' {
+                    *index += n;
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    fn highlight_character(&mut self, hl: &HighlightOptions, index: &mut usize, chars: &Vec<char>) -> bool {
+        if hl.characters {
+            if let Some(c) = chars.get(*index) {
+                if *c == '\'' {
+                    let mut close = false; 
+                    let mut count = 1;
+                    while let Some(ch) = chars.get(*index + count){
+                        if *ch == '\'' {
+                            close = true;
+                            break;
+                        }
+                        count += 1;
+                    }
+                    if close {
+                        for _ in 0..count + 1 {
+                            self.highlight.push(Highlight::Character);
+                        }
+                        *index += count + 1;
+                        return true;
+                    }
+                }
+            }
+        }
+        false
+    }
 
     fn highlight_match(&mut self, word: &Option<String>){
         if let Some(word) = word {
