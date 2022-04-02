@@ -269,10 +269,6 @@ impl File {
         self.rows.get(index)
     }
     
-    pub fn mut_row(&mut self, index: usize) -> Option<&mut Row> {
-        self.rows.get_mut(index)
-    }
-    
     pub fn is_empty(&self) -> bool {
         self.rows.is_empty()
     }

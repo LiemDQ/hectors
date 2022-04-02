@@ -1,6 +1,5 @@
 use std::time::{self, Duration};
 use termion::event::Key;
-use unicode_segmentation::UnicodeSegmentation;
 use std::error;
 
 use crate::row::Row;

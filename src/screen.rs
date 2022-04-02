@@ -1,4 +1,3 @@
-use termion::color;
 use termion::event::Key;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::input::TermRead;
@@ -75,22 +74,6 @@ impl Screen {
 
     pub fn cursor_hide() {
         print!("{}", termion::cursor::Hide);
-    }
-
-    pub fn set_bg_color(color: color::Rgb){
-        print!("{}", color::Bg(color));
-    }
-
-    pub fn set_fg_color(color: color::Rgb){
-        print!("{}", color::Fg(color));
-    }
-
-    pub fn reset_bg_color() {
-        print!("{}", color::Bg(color::Reset));
-    }
-
-    pub fn reset_fg_color() {
-        print!("{}", color::Fg(color::Reset));
     }
 
     pub fn invert_colors(){

@@ -1,9 +1,8 @@
 use unicode_segmentation::UnicodeSegmentation;
 use crate::{highlight::Highlight, editor::SearchDirection, file::HighlightOptions};
-use std::{cmp, thread::current};
+use std::{cmp};
 use termion::color;
 
-const HECTO_TAB_STOP: usize = 4;
 const HECTO_TAB_SPACE: &str = " ";
 #[derive(Default)]
 pub struct Row {
@@ -48,7 +47,7 @@ impl Row {
             .skip(start)
             .take(end-start)
         {
-            if let Some(c) = grapheme.chars().next() {
+            if let Some(_) = grapheme.chars().next() {
                 let highlighting_type = self.highlight
                     .get(index)
                     .unwrap_or(&Highlight::None);
@@ -198,14 +197,6 @@ impl Row {
             n += 1;
         }
         n
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len == 0
-    }
-
-    fn update_len(&mut self) {
-        self.len = self.string[..].graphemes(true).count();
     }
 
     pub fn highlight(&mut self, hl: &HighlightOptions, word: &Option<String>, start_with_comment: bool) -> bool {
@@ -388,10 +379,10 @@ impl Row {
                         let has_advanced = true;
                         //this is probably not an idiomatic way of doing it, but i 
                         //could not find a more elegant method.
-                        self.highlight.push(Highlight::Comment);
-                        self.highlight.push(Highlight::Comment);
+                        self.highlight.push(Highlight::MlComment);
+                        self.highlight.push(Highlight::MlComment);
                         for n in *index+count..chars.len() {
-                            self.highlight.push(Highlight::Comment);
+                            self.highlight.push(Highlight::MlComment);
                             count += 1;
                             if chars[n-1] == '*' && chars[n] == '/' {
                                 break;
@@ -409,7 +400,7 @@ impl Row {
     fn highlight_ml_comment_end(&mut self, hl: &HighlightOptions, index: &mut usize, chars: &Vec<char>) -> bool {
         if hl.multiline_comments && chars.len() > 0 {
             for n in 1..chars.len() {
-                self.highlight.push(Highlight::Comment);
+                self.highlight.push(Highlight::MlComment);
                 if chars[n-1] == '*' && chars[n] == '/' {
                     *index += n;
                     return true;

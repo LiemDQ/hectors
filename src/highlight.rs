@@ -4,7 +4,6 @@ use termion::color;
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Highlight {
     None,
-    Normal,
     String,
     Character,
     Comment,
@@ -13,7 +12,6 @@ pub enum Highlight {
     Keyword2,
     Number,
     Match,
-    Caps
 }
 
 impl Highlight {
