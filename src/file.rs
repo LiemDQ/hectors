@@ -53,84 +53,134 @@ pub struct HighlightOptions {
 impl HighlightOptions {
     pub fn from(filename: &str) -> Self {
         
-        Self {
-            numbers: true,
-            strings: true,
-            keywords1: vec![
-                "as".to_string(),
-                "break".to_string(),
-                "const".to_string(),
-                "continue".to_string(),
-                "crate".to_string(),
-                "else".to_string(),
-                "enum".to_string(),
-                "extern".to_string(),
-                "false".to_string(),
-                "fn".to_string(),
-                "for".to_string(),
-                "if".to_string(),
-                "impl".to_string(),
-                "in".to_string(),
-                "let".to_string(),
-                "loop".to_string(),
-                "match".to_string(),
-                "mod".to_string(),
-                "move".to_string(),
-                "mut".to_string(),
-                "pub".to_string(),
-                "ref".to_string(),
-                "return".to_string(),
-                "self".to_string(),
-                "Self".to_string(),
-                "static".to_string(),
-                "struct".to_string(),
-                "super".to_string(),
-                "trait".to_string(),
-                "true".to_string(),
-                "type".to_string(),
-                "unsafe".to_string(),
-                "use".to_string(),
-                "where".to_string(),
-                "while".to_string(),
-                "dyn".to_string(),
-                "abstract".to_string(),
-                "become".to_string(),
-                "box".to_string(),
-                "do".to_string(),
-                "final".to_string(),
-                "macro".to_string(),
-                "override".to_string(),
-                "priv".to_string(),
-                "typeof".to_string(),
-                "unsized".to_string(),
-                "virtual".to_string(),
-                "yield".to_string(),
-                "async".to_string(),
-                "await".to_string(),
-                "try".to_string(),
-                ],
-            keywords2: vec![
-                "bool".to_string(),
-                "char".to_string(),
-                "i8".to_string(),
-                "i16".to_string(),
-                "i32".to_string(),
-                "i64".to_string(),
-                "isize".to_string(),
-                "u8".to_string(),
-                "u16".to_string(),
-                "u32".to_string(),
-                "u64".to_string(),
-                "usize".to_string(),
-                "f32".to_string(),
-                "f64".to_string(),
-            ],
-            comments: true,
-            multiline_comments: true,
-            characters: true,
-            file_type: Self::set_filetype(filename),
-            ..Default::default()
+        match Self::set_filetype(filename) {
+            Some(FileType::Rust) => {
+                Self {
+                    numbers: true,
+                    strings: true,
+                    keywords1: vec![
+                        "as".to_string(),
+                        "break".to_string(),
+                        "const".to_string(),
+                        "continue".to_string(),
+                        "crate".to_string(),
+                        "else".to_string(),
+                        "enum".to_string(),
+                        "extern".to_string(),
+                        "false".to_string(),
+                        "fn".to_string(),
+                        "for".to_string(),
+                        "if".to_string(),
+                        "impl".to_string(),
+                        "in".to_string(),
+                        "let".to_string(),
+                        "loop".to_string(),
+                        "match".to_string(),
+                        "mod".to_string(),
+                        "move".to_string(),
+                        "mut".to_string(),
+                        "pub".to_string(),
+                        "ref".to_string(),
+                        "return".to_string(),
+                        "self".to_string(),
+                        "Self".to_string(),
+                        "static".to_string(),
+                        "struct".to_string(),
+                        "super".to_string(),
+                        "trait".to_string(),
+                        "true".to_string(),
+                        "type".to_string(),
+                        "unsafe".to_string(),
+                        "use".to_string(),
+                        "where".to_string(),
+                        "while".to_string(),
+                        "dyn".to_string(),
+                        "abstract".to_string(),
+                        "become".to_string(),
+                        "box".to_string(),
+                        "do".to_string(),
+                        "final".to_string(),
+                        "macro".to_string(),
+                        "override".to_string(),
+                        "priv".to_string(),
+                        "typeof".to_string(),
+                        "unsized".to_string(),
+                        "virtual".to_string(),
+                        "yield".to_string(),
+                        "async".to_string(),
+                        "await".to_string(),
+                        "try".to_string(),
+                        ],
+                    keywords2: vec![
+                        "bool".to_string(),
+                        "char".to_string(),
+                        "i8".to_string(),
+                        "i16".to_string(),
+                        "i32".to_string(),
+                        "i64".to_string(),
+                        "isize".to_string(),
+                        "u8".to_string(),
+                        "u16".to_string(),
+                        "u32".to_string(),
+                        "u64".to_string(),
+                        "usize".to_string(),
+                        "f32".to_string(),
+                        "f64".to_string(),
+                    ],
+                    comments: true,
+                    multiline_comments: true,
+                    characters: true,
+                    file_type: Self::set_filetype(filename),
+                    ..Default::default()
+                }
+            }
+            Some(FileType::C) => {
+                Self {
+                    numbers: true,
+                    strings: true,
+                    keywords1: vec![
+                        "switch".to_string(),
+                        "if".to_string(),
+                        "while".to_string(),
+                        "for".to_string(),
+                        "break".to_string(),
+                        "continue".to_string(),
+                        "return".to_string(),
+                        "else".to_string(),
+                        "struct".to_string(),
+                        "union".to_string(),
+                        "typedef".to_string(),
+                        "static".to_string(),
+                        "enum".to_string(),
+                        "case".to_string(),
+                        "#include".to_string(),
+                        "#define".to_string(),
+                    ],
+                    keywords2: vec![
+                        "int".to_string(),
+                        "long".to_string(),
+                        "double".to_string(),
+                        "float".to_string(),
+                        "char".to_string(),
+                        "unsigned".to_string(),
+                        "signed".to_string(),
+                        "void".to_string(),
+                    ],
+                    comments: true,
+                    multiline_comments: true,
+                    characters: true,
+                    file_type: Some(FileType::C),
+                    ..Default::default()
+                }
+            }
+            Some(FileType::Text) => {
+                Default::default()
+            }
+            None => {
+                Default::default()
+            }
         }
+        
     }
 
     pub fn set_filetype(filename: &str) -> Option<FileType> {
@@ -276,7 +326,10 @@ impl File {
             self.rows.push(Row::default());
         }
         let current_row = &mut self.rows[at.y];
-        let new_row = current_row.split(at.x);
+        let num_spaces = current_row.get_prefix_len(" ");
+        let mut new_row = current_row.split(at.x);
+        new_row.prepend_str(&" ".repeat(num_spaces));
+        
 
         self.rows.insert(at.y+1, new_row);
     }

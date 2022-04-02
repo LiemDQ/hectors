@@ -114,6 +114,11 @@ impl Row {
         self.len += new.len;
     }
 
+    pub fn prepend_str(&mut self, s: &str){
+        self.string = format!("{}{}", s, self.string);
+        self.len += s.len();
+    }
+
     pub fn find(&self, query: &str, at: usize, direction: SearchDirection) -> Option<usize> {
         if at > self.len || query.is_empty() {
             return None;
@@ -182,6 +187,17 @@ impl Row {
             is_highlighted: false,
             highlight: Vec::new()
         }
+    }
+
+    pub fn get_prefix_len(&self, s: &str) -> usize {
+        let mut n = 0;
+        for grapheme in  self.string[..].graphemes(true) {
+            if grapheme != s {
+                break;
+            }
+            n += 1;
+        }
+        n
     }
 
     pub fn is_empty(&self) -> bool {
